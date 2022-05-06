@@ -1,3 +1,4 @@
+using APM_Back.ActionFilters;
 using APM_Back.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -23,6 +24,10 @@ namespace APM_Back
         {
             services.AddDbContext<DataContext>(opt =>
                 opt.UseInMemoryDatabase("APM APP"));
+
+            services.AddScoped<ValidationActionFilterClass>();
+            services.AddScoped<ValidateEntityExistsClass<Product>>();
+
             services.AddControllers();
         }
 

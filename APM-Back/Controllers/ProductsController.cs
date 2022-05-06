@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using APM_Back.Models;
+using APM_Back.ActionFilters;
 
 namespace APM_Back.Controllers
 {
@@ -29,22 +30,19 @@ namespace APM_Back.Controllers
 
         // GET: api/Products/5
         [HttpGet("{id}")]
+        [ServiceFilter(typeof(ValidateEntityExistsClass<Product>))]
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
-            var product = await _context.Products.FindAsync(id);
+            var product = HttpContext.Items["entity"] as Product;
 
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            return product;
+            return Ok(product);
         }
 
         // PUT: api/Products/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
+        [ServiceFilter(typeof(ValidationActionFilterClass))]
         public async Task<IActionResult> PutProduct(int id, Product product)
         {
             if (id != product.ProductId)
@@ -77,6 +75,7 @@ namespace APM_Back.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
+        [ServiceFilter(typeof(ValidationActionFilterClass))]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
             _context.Products.Add(product);
