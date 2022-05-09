@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using APM_Back.Models;
 using APM_Back.ActionFilters;
+using APM_Back.Services;
 
 namespace APM_Back.Controllers
 {
@@ -14,95 +15,72 @@ namespace APM_Back.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly IProductService _productService;
 
-        public ProductsController(DataContext context)
+        public ProductsController(IProductService productService)
         {
-            _context = context;
+            this._productService = productService;
         }
 
         // GET: api/Products
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
         {
-            return await _context.Products.ToListAsync();
+            var result = await this._productService.GetAll();
+            return this.Ok(result);
         }
 
         // GET: api/Products/5
         [HttpGet("{id}")]
         [ServiceFilter(typeof(ValidateEntityExistsClass<Product>))]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        public async Task<ActionResult<Product>> GetProduct(Guid id)
         {
-            var product = HttpContext.Items["entity"] as Product;
-
+            var product = await this._productService.GetBy(id);
             return Ok(product);
         }
 
         // PUT: api/Products/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
         [ServiceFilter(typeof(ValidationActionFilterClass))]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        public async Task<IActionResult> PutProduct(Guid id, Product product)
         {
-            if (id != product.ProductId)
-            {
-                return BadRequest();
-            }
 
-            _context.Entry(product).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProductExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
+            await this._productService.Update(id, product);
             return NoContent();
+
+            //try
+            //{
+            //    await _context.SaveChangesAsync();
+            //}
+            //catch (DbUpdateConcurrencyException)
+            //{
+            //    if (!ProductExists(id))
+            //    {
+            //        return NotFound();
+            //    }
+            //    else
+            //    {
+            //        throw;
+            //    }
+            //}
         }
 
         // POST: api/Products
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
         [ServiceFilter(typeof(ValidationActionFilterClass))]
         public async Task<ActionResult<Product>> PostProduct(Product product)
         {
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetProduct", new { id = product.ProductId }, product);
+            var createdProduct = await this._productService.Create(product);
+            return CreatedAtAction("GetProduct", new { id = createdProduct.ProductId }, createdProduct);
         }
 
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Product>> DeleteProduct(int id)
+        [ServiceFilter(typeof(ValidateEntityExistsClass<Product>))]
+        public async Task<ActionResult<Product>> DeleteProduct(Guid id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
-
-            return product;
-        }
-
-        private bool ProductExists(int id)
-        {
-            return _context.Products.Any(e => e.ProductId == id);
+            var deletedProduct = await this._productService.Delete(id);
+            return deletedProduct;
         }
     }
 }

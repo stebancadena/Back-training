@@ -20,12 +20,13 @@ namespace APM_Back.ActionFilters
 
         public void OnActionExecuting(ActionExecutingContext context)
         {
-            var id = 0;
+            Guid id;
 
             if (context.ActionArguments.ContainsKey("id"))
             {
-                id = (int)context.ActionArguments["id"];
-            }else
+                id = (Guid)context.ActionArguments["id"];
+            }
+            else
             {
                 context.Result = new BadRequestObjectResult("Bad id parameter");
                 return;

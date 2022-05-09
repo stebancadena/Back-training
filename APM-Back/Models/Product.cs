@@ -1,8 +1,10 @@
-﻿namespace APM_Back.Models
+﻿using System;
+
+namespace APM_Back.Models
 {
     public class Product
     {
-        public int ProductId { get; set; }
+        public Guid ProductId { get; set; }
         public string ProductName { get; set; }
         public string ProductCode { get; set; }
         public string ReleaseDate { get; set; }

@@ -1,5 +1,7 @@
 using APM_Back.ActionFilters;
+using APM_Back.Data;
 using APM_Back.Models;
+using APM_Back.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -27,6 +29,9 @@ namespace APM_Back
 
             services.AddScoped<ValidationActionFilterClass>();
             services.AddScoped<ValidateEntityExistsClass<Product>>();
+
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductService, ProductService>();
 
             services.AddControllers();
         }

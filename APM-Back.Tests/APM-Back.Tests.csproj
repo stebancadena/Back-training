@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\APM-Back\APM-Back.csproj" />
-    <ProjectReference Include="..\APM-Back\APM-Back\APM-Back.csproj" />
   </ItemGroup>
 
 </Project>
