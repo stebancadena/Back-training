@@ -24,16 +24,16 @@ namespace APM_Back.Controllers
 
         // GET: api/Products
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        public async Task<IActionResult> GetProducts()
         {
             var result = await this._productService.GetAll();
-            return this.Ok(result);
+            return Ok(result);
         }
 
         // GET: api/Products/5
         [HttpGet("{id}")]
         [ServiceFilter(typeof(ValidateEntityExistsClass<Product>))]
-        public async Task<ActionResult<Product>> GetProduct(Guid id)
+        public async Task<IActionResult> GetProduct(Guid id)
         {
             var product = await this._productService.GetBy(id);
             return Ok(product);
@@ -47,28 +47,12 @@ namespace APM_Back.Controllers
 
             await this._productService.Update(id, product);
             return NoContent();
-
-            //try
-            //{
-            //    await _context.SaveChangesAsync();
-            //}
-            //catch (DbUpdateConcurrencyException)
-            //{
-            //    if (!ProductExists(id))
-            //    {
-            //        return NotFound();
-            //    }
-            //    else
-            //    {
-            //        throw;
-            //    }
-            //}
         }
 
         // POST: api/Products
         [HttpPost]
         [ServiceFilter(typeof(ValidationActionFilterClass))]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<IActionResult> PostProduct(Product product)
         {
             var createdProduct = await this._productService.Create(product);
             return CreatedAtAction("GetProduct", new { id = createdProduct.ProductId }, createdProduct);
@@ -77,10 +61,10 @@ namespace APM_Back.Controllers
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
         [ServiceFilter(typeof(ValidateEntityExistsClass<Product>))]
-        public async Task<ActionResult<Product>> DeleteProduct(Guid id)
+        public async Task<IActionResult> DeleteProduct(Guid id)
         {
             var deletedProduct = await this._productService.Delete(id);
-            return deletedProduct;
+            return Ok(deletedProduct);
         }
     }
 }
