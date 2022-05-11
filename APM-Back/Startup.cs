@@ -25,7 +25,7 @@ namespace APM_Back
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DataContext>(opt =>
-                opt.UseInMemoryDatabase("APM APP"));
+                opt.UseNpgsql(Configuration.GetConnectionString("test")));
 
             services.AddScoped<ValidationActionFilterClass>();
             services.AddScoped<ValidateEntityExistsClass<Product>>();
