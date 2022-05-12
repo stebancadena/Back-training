@@ -7,7 +7,7 @@ namespace APM_Back.Data
 {
     public interface IProductRepository
     {
-        Task<IEnumerable<Product>> GetAll();
+        Task<PagedData> GetAll(PaginationFilter paginationFilter);
         Task<Product> GetBy(Guid id);
         Task<Product> Create(Product product);
         Task<Product> Update(Guid id, Product product);

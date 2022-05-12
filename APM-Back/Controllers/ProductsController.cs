@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using APM_Back.Models;
 using APM_Back.ActionFilters;
 using APM_Back.Services;
+using APM_Back.Helpers;
 
 namespace APM_Back.Controllers
 {
@@ -16,18 +17,27 @@ namespace APM_Back.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly IUriService _uriService;
 
-        public ProductsController(IProductService productService)
+        public ProductsController(IProductService productService, IUriService uriService)
         {
             this._productService = productService;
+            this._uriService = uriService;
         }
 
         // GET: api/Products
         [HttpGet]
-        public async Task<IActionResult> GetProducts()
+        public async Task<IActionResult> GetProducts([FromQuery] PaginationFilter filter)
         {
-            var result = await this._productService.GetAll();
-            return Ok(result);
+            var route = Request.Path.Value;
+            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+
+            var result = await this._productService.GetAll(filter);
+
+            var pagedResponse = PaginationHelper.CreatePagedReponse<Product>(result.data,validFilter,result.totalRecords,_uriService,route);
+
+            var response = new PagedResponse<IEnumerable<Product>>(result.data, filter.PageNumber, filter.PageSize);
+            return Ok(pagedResponse);
         }
 
         // GET: api/Products/5
@@ -36,7 +46,8 @@ namespace APM_Back.Controllers
         public async Task<IActionResult> GetProduct(Guid id)
         {
             var product = await this._productService.GetBy(id);
-            return Ok(product);
+            var response = new Response<Product>(product);
+            return Ok(response);
         }
 
         // PUT: api/Products/5

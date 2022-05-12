@@ -4,6 +4,7 @@ using APM_Back.Models;
 using APM_Back.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,15 @@ namespace APM_Back
         {
             services.AddDbContext<DataContext>(opt =>
                 opt.UseNpgsql(Configuration.GetConnectionString("test")));
+
+            services.AddHttpContextAccessor();
+            services.AddSingleton<IUriService>(o =>
+            {
+                var accessor = o.GetRequiredService<IHttpContextAccessor>();
+                var request = accessor.HttpContext.Request;
+                var uri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent());
+                return new UriService(uri);
+            });
 
             services.AddScoped<ValidationActionFilterClass>();
             services.AddScoped<ValidateEntityExistsClass<Product>>();

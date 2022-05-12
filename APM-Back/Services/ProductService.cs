@@ -27,9 +27,9 @@ namespace APM_Back.Services
             return productDeleted;
         }
 
-        public Task<IEnumerable<Product>> GetAll()
+        public Task<PagedData> GetAll(PaginationFilter filter)
         {
-            return this._repository.GetAll();
+            return this._repository.GetAll(filter);
         }
 
         public Task<Product> GetBy(Guid id)

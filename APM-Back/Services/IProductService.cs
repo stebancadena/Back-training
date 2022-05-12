@@ -7,7 +7,7 @@ namespace APM_Back.Services
 {
     public interface IProductService
     {
-        Task<IEnumerable<Product>> GetAll();
+        Task<PagedData> GetAll(PaginationFilter filter);
         Task<Product> GetBy(Guid id);
         Task<Product> Create(Product product);
         Task<Product> Update(Guid id, Product product);

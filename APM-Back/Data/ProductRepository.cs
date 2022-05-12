@@ -29,9 +29,17 @@ namespace APM_Back.Data
             return product;
         }
 
-        public async Task<IEnumerable<Product>> GetAll()
+        public async Task<PagedData> GetAll(PaginationFilter filter)
         {
-            return await _dataContext.Products.ToListAsync();
+            var data = await _dataContext.Products
+                .Skip((filter.PageNumber - 1) * filter.PageSize)
+                .Take(filter.PageSize)
+                .ToListAsync();
+            var totalCount = await _dataContext.Products.CountAsync();
+
+            var pagedData = new PagedData(data, totalCount);
+
+            return pagedData;
         }
 
         public async Task<Product> GetBy(Guid id)
