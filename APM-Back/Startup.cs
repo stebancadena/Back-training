@@ -25,6 +25,8 @@ namespace APM_Back
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
+
             services.AddDbContext<DataContext>(opt =>
                 opt.UseNpgsql(Configuration.GetConnectionString("test")));
 
@@ -57,6 +59,11 @@ namespace APM_Back
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(builder => builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader());
 
             app.UseAuthorization();
 
