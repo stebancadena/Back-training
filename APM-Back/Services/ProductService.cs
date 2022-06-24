@@ -1,4 +1,5 @@
 ﻿using APM_Back.Data;
+using APM_Back.Helpers;
 using APM_Back.Models;
 using System;
 using System.Collections.Generic;
@@ -10,9 +11,11 @@ namespace APM_Back.Services
     public class ProductService : IProductService
     {
         private readonly IProductRepository _repository;
-        public ProductService(IProductRepository repository)
+        private readonly IUriService _uriService;
+        public ProductService(IProductRepository repository, IUriService uriService)
         {
             this._repository = repository;
+            this._uriService = uriService;
         }
 
         public async Task<Product> Create(Product product)
@@ -27,9 +30,13 @@ namespace APM_Back.Services
             return productDeleted;
         }
 
-        public Task<PagedData> GetAll(PaginationFilter filter)
+        public async Task<PagedResponse<IEnumerable<Product>>> GetAll(PaginationFilter filter, string route)
         {
-            return this._repository.GetAll(filter);
+            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
+            var result = await this._repository.GetAll(filter);
+
+            var pagedRespose = PaginationHelper.CreatePagedReponse<Product>(result.data, validFilter, result.totalRecords, _uriService, route);
+            return pagedRespose;
         }
 
         public Task<Product> GetBy(Guid id)

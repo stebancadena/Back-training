@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using APM_Back.Models;
 using APM_Back.ActionFilters;
 using APM_Back.Services;
-using APM_Back.Helpers;
 
 namespace APM_Back.Controllers
 {
@@ -17,12 +12,10 @@ namespace APM_Back.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
-        private readonly IUriService _uriService;
 
-        public ProductsController(IProductService productService, IUriService uriService)
+        public ProductsController(IProductService productService)
         {
             this._productService = productService;
-            this._uriService = uriService;
         }
 
         // GET: api/Products
@@ -30,14 +23,8 @@ namespace APM_Back.Controllers
         public async Task<IActionResult> GetProducts([FromQuery] PaginationFilter filter)
         {
             var route = Request.Path.Value;
-            var validFilter = new PaginationFilter(filter.PageNumber, filter.PageSize);
-
-            var result = await this._productService.GetAll(filter);
-
-            var pagedResponse = PaginationHelper.CreatePagedReponse<Product>(result.data,validFilter,result.totalRecords,_uriService,route);
-
-            var response = new PagedResponse<IEnumerable<Product>>(result.data, filter.PageNumber, filter.PageSize);
-            return Ok(pagedResponse);
+            var response = await this._productService.GetAll(filter, route);
+            return Ok(response);
         }
 
         // GET: api/Products/5
