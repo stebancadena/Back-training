@@ -19,19 +19,18 @@ namespace APM_Back.Tests.Controllers
 {
     public class ProductsControllerTest
     {
-        private readonly Mock<IProductService> _mockRepo;
-        private readonly Mock<IUriService> _mockUri;
-        private readonly Mock<PaginationFilter> _paginationFilter;
+        private readonly Mock<IProductService> _mockProductService;
         private readonly ProductsController _controller;
+        private readonly Mock<PaginationFilter> _paginationFilter;
+        private readonly Mock<string> _route;
+
         public ProductsControllerTest()
         {
             var httpContext = new DefaultHttpContext();
 
-            _mockRepo = new Mock<IProductService>();
-            _mockUri = new Mock<IUriService>();
-            _paginationFilter = new Mock<PaginationFilter>();
-            _controller = new ProductsController(_mockRepo.Object, _mockUri.Object);
-
+            _mockProductService = new Mock<IProductService>();
+            
+            _controller = new ProductsController(_mockProductService.Object);
             _controller.ControllerContext = new ControllerContext() { HttpContext = new DefaultHttpContext() };
         }
 
@@ -39,25 +38,52 @@ namespace APM_Back.Tests.Controllers
         [Fact]
         public async void GetAll_Executions_Type()
         {
-            _mockRepo.Setup(repo => repo.GetAll(_paginationFilter.Object))
-                .ReturnsAsync(new PagedData(new List<Product>() { new Product(), new Product() }, 2));
+            //Arrange
+            var filter = new PaginationFilter();
+            var route = _controller.Request.Path.Value;
 
-            var response = await _controller.GetProducts(_paginationFilter.Object);
+            var data = new List<Product>()
+            {
+                new Product(), new Product(), new Product()
+            };
+
+            var servResponse = new PagedResponse<IEnumerable<Product>>(data,filter.PageSize,filter.PageNumber);
+
+
+            _mockProductService.Setup(serv => serv.GetAll(filter, route)).ReturnsAsync(servResponse);
+
+            //Act
+            var response = await _controller.GetProducts(filter);
+
+            //Assert
             Assert.IsType<OkObjectResult>(response);
-            //Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
         public async void GetAll_Executes_ReturnsExactNumberOfProducts()
         {
-            _mockRepo.Setup(repo => repo.GetAll(_paginationFilter.Object))
-                .ReturnsAsync(new PagedData(new List<Product>() { new Product(), new Product() } , 2));
+            //Arrange
+            var filter = new PaginationFilter();
+            var route = _controller.Request.Path.Value;
 
-            var response = await _controller.GetProducts(_paginationFilter.Object);
+            var data = new List<Product>()
+            {
+                new Product(), new Product(), new Product()
+            };
 
+            var servResponse = new PagedResponse<IEnumerable<Product>>(data, filter.PageSize, filter.PageNumber);
+
+
+            _mockProductService.Setup(serv => serv.GetAll(filter, route)).ReturnsAsync(servResponse);
+
+            //Act
+            var response = await _controller.GetProducts(filter);
+
+
+            //Assert
             var okResult = response as OkObjectResult;
             var config = okResult.Value as PagedResponse<IEnumerable<Product>>;
-            Assert.Equal(2, config.Data.Count());
+            Assert.Equal(3, config.Data.Count());
         }
     }
 }
