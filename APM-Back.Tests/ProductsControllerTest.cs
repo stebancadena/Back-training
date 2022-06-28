@@ -4,6 +4,7 @@ using APM_Back.Models;
 using APM_Back.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Moq;
 using System;
 using System.Collections;
@@ -59,6 +60,8 @@ namespace APM_Back.Tests.Controllers
             Assert.IsType<OkObjectResult>(response);
         }
 
+        //-------------------------------------------Post-------------------------------------------
+
         [Fact]
         public async void GetAll_Executes_ReturnsExactNumberOfProducts()
         {
@@ -84,6 +87,68 @@ namespace APM_Back.Tests.Controllers
             var okResult = response as OkObjectResult;
             var config = okResult.Value as PagedResponse<IEnumerable<Product>>;
             Assert.Equal(3, config.Data.Count());
+        }
+
+        //[Fact]
+        //public async void getById_ReturnsNoFound()
+        //{
+        //    //Arrange
+        //    _controller.ModelState.AddModelError("Model error", "Invalid model input, not a product");
+        //    var product = new Product { ProductId = new Guid(), ProductName = "Steban" };
+
+        //    _mockProductService.Setup(serv => serv.GetBy(new Guid())).ReturnsAsync( (Product) null);
+
+        //    //Act
+        //    var response = await _controller.GetProduct(new Guid());
+        //    var result = response;
+        //    //Assert
+        //    Assert.IsType<NotFoundObjectResult>(response);
+        //}
+
+        [Fact]
+        public async void AddProduct_Returns_Succesful()
+        {
+            //Arrange
+            var product = new Product { ProductId = new Guid(), ProductName = "Steban" };
+            _mockProductService.Setup(serv => serv.Create(It.IsAny<Product>())).Returns(Task.FromResult(new Product()));
+
+            //Act
+            var result = await _controller.PostProduct(product);
+
+            //Assert
+            Assert.NotNull(result);
+            Assert.Equal(201, (result as IStatusCodeActionResult).StatusCode);
+        }
+
+        //-------------------------------------------Delete-------------------------------------------
+        [Fact]
+        public async void DeleteProduct_Returns_Succesful()
+        {
+            //Arrange
+            var product = new Product { ProductId = new Guid(), ProductName = "Steban" };
+            _mockProductService.Setup(serv => serv.Delete(It.IsAny<Guid>())).Returns(Task.FromResult(new Product()));
+
+            //Act
+            var result = await _controller.DeleteProduct(product.ProductId);
+
+            //Assert
+            Assert.NotNull(result);
+            Assert.Equal(200, (result as IStatusCodeActionResult).StatusCode);
+        }
+
+        [Fact]
+        public async void DeleteProduct_Returns_NotFound()
+        {
+            //Arrange
+            var productId = new Guid();
+            _mockProductService.Setup(serv => serv.Delete(productId)).Throws(new Exception());
+
+            //Act
+            var result = await _controller.DeleteProduct(productId);
+
+            //Assert
+            Assert.NotNull(result);
+            Assert.Equal(404, (result as IStatusCodeActionResult).StatusCode);
         }
     }
 }
