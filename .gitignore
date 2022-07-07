@@ -84,8 +84,9 @@ msbuild.wrn
 
 # Visual Studio 2019
 .vs/
-APM-Back/bin/ 
-APM-Back/obj/
+/APM-Back/bin 
+/APM-Back/obj
+/APM-Back/Properties
 
 #Configurations
 appsettings.*.json
