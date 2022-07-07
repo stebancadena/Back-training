@@ -123,7 +123,7 @@ namespace APM_Back.Tests.Controllers
 
         //-------------------------------------------Action Filter-------------------------------------------
         [Fact]
-        public async void ActionFilter_Returns_NotFound()
+        public async void ActionFilter_Returns_BadRequest()
         {
             //Arrange
             var modelState = new ModelStateDictionary();
@@ -146,6 +146,38 @@ namespace APM_Back.Tests.Controllers
 
             var sut = new ValidateEntityExistsClass<Product>(_mockDataContext.Object);
             
+            //Action
+            sut.OnActionExecuting(context);
+
+            //Assert
+            Assert.IsType<BadRequestObjectResult>(context.Result);
+        }
+
+        [Fact]
+        public async void ActionFilter_Returns_NotFound()
+        {
+            //Arrange
+            var modelState = new ModelStateDictionary();
+            modelState.AddModelError("", "error");
+            var httpContext = new DefaultHttpContext();
+
+            var actContext = new ActionContext(
+                httpContext,
+                routeData: new RouteData(),
+                actionDescriptor: new ActionDescriptor(),
+                modelState: modelState
+                );
+            //TODO = Mock the dbcontext
+            var context = new ActionExecutingContext(
+                actContext,
+                new List<IFilterMetadata>(),
+                new Dictionary<string, object>(),
+                _controller
+                );
+            context.ActionArguments["id"] = new Guid();
+
+            var sut = new ValidateEntityExistsClass<Product>(_mockDataContext.Object);
+
             //Action
             sut.OnActionExecuting(context);
 
