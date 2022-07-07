@@ -1,18 +1,18 @@
-﻿using APM_Back.Controllers;
-using APM_Back.Data;
+﻿using APM_Back.ActionFilters;
+using APM_Back.Controllers;
 using APM_Back.Models;
 using APM_Back.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Routing;
 using Moq;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -22,14 +22,14 @@ namespace APM_Back.Tests.Controllers
     {
         private readonly Mock<IProductService> _mockProductService;
         private readonly ProductsController _controller;
-        private readonly Mock<PaginationFilter> _paginationFilter;
-        private readonly Mock<string> _route;
+        private readonly Mock<DataContext> _mockDataContext;
 
         public ProductsControllerTest()
         {
             var httpContext = new DefaultHttpContext();
 
             _mockProductService = new Mock<IProductService>();
+            _mockDataContext = new Mock<DataContext>();
             
             _controller = new ProductsController(_mockProductService.Object);
             _controller.ControllerContext = new ControllerContext() { HttpContext = new DefaultHttpContext() };
@@ -89,22 +89,6 @@ namespace APM_Back.Tests.Controllers
             Assert.Equal(3, config.Data.Count());
         }
 
-        //[Fact]
-        //public async void getById_ReturnsNoFound()
-        //{
-        //    //Arrange
-        //    _controller.ModelState.AddModelError("Model error", "Invalid model input, not a product");
-        //    var product = new Product { ProductId = new Guid(), ProductName = "Steban" };
-
-        //    _mockProductService.Setup(serv => serv.GetBy(new Guid())).ReturnsAsync( (Product) null);
-
-        //    //Act
-        //    var response = await _controller.GetProduct(new Guid());
-        //    var result = response;
-        //    //Assert
-        //    Assert.IsType<NotFoundObjectResult>(response);
-        //}
-
         [Fact]
         public async void AddProduct_Returns_Succesful()
         {
@@ -136,19 +120,37 @@ namespace APM_Back.Tests.Controllers
             Assert.Equal(200, (result as IStatusCodeActionResult).StatusCode);
         }
 
+
+        //-------------------------------------------Action Filter-------------------------------------------
         [Fact]
-        public async void DeleteProduct_Returns_NotFound()
+        public async void ActionFilter_Returns_NotFound()
         {
             //Arrange
-            var productId = new Guid();
-            _mockProductService.Setup(serv => serv.Delete(productId)).Returns(Task.FromResult(new Product()));
+            var modelState = new ModelStateDictionary();
+            modelState.AddModelError("", "error");
+            var httpContext = new DefaultHttpContext();
 
-            //Act
-            var result = await _controller.DeleteProduct(productId);
+            var actContext = new ActionContext(
+                httpContext,
+                routeData: new RouteData(),
+                actionDescriptor: new ActionDescriptor(),
+                modelState: modelState
+                );
+
+            var context = new ActionExecutingContext(
+                actContext,
+                new List<IFilterMetadata>(),
+                new Dictionary<string, object>(),
+                _controller
+                );
+
+            var sut = new ValidateEntityExistsClass<Product>(_mockDataContext.Object);
+            
+            //Action
+            sut.OnActionExecuting(context);
 
             //Assert
-            Assert.NotNull(result);
-            Assert.Equal(404, (result as IStatusCodeActionResult).StatusCode);
+            Assert.IsType<NotFoundResult>(context.Result);
         }
     }
 }
