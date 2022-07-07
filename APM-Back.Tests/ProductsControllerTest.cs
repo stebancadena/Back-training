@@ -141,7 +141,7 @@ namespace APM_Back.Tests.Controllers
         {
             //Arrange
             var productId = new Guid();
-            _mockProductService.Setup(serv => serv.Delete(productId)).Throws(new Exception());
+            _mockProductService.Setup(serv => serv.Delete(productId)).Returns(Task.FromResult(new Product()));
 
             //Act
             var result = await _controller.DeleteProduct(productId);

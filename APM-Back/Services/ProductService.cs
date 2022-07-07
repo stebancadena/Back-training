@@ -39,9 +39,11 @@ namespace APM_Back.Services
             return pagedRespose;
         }
 
-        public Task<Product> GetBy(Guid id)
+        public async Task<Response<Product>> GetBy(Guid id)
         {
-            return this._repository.GetBy(id);
+            var result = await this._repository.GetBy(id);
+            var response = new Response<Product>(result);
+            return response;
         }
 
         public Task<Product> Update(Guid id, Product product)

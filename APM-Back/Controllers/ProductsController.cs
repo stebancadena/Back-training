@@ -32,8 +32,7 @@ namespace APM_Back.Controllers
         [ServiceFilter(typeof(ValidateEntityExistsClass<Product>))]
         public async Task<IActionResult> GetProduct(Guid id)
         {
-            var product = await this._productService.GetBy(id);
-            var response = new Response<Product>(product);
+            var response = await this._productService.GetBy(id);
             return Ok(response);
         }
 
